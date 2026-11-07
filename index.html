@@ -92,6 +92,7 @@
     font-weight:900;
     letter-spacing:-0.01em;
   }
+  img{height:auto;} /* بعد إضافة width/height للصور عشان ما تتمططش */
   a{color:inherit; text-decoration:none;}
   .num{font-family:'Tajawal',sans-serif; direction:ltr; display:inline-block;}
   ::selection{background:var(--scan); color:var(--ink);}
@@ -319,7 +320,7 @@
   @media(max-width:560px){ .gallery-grid{grid-template-columns:1fr;} }
   .lightbox{position:fixed; inset:0; background:rgba(10,14,18,0.92); z-index:200; display:none; align-items:center; justify-content:center; padding:5%;}
   .lightbox.active{display:flex;}
-  .lightbox img{max-width:100%; max-height:90vh; border-radius:4px;}
+  .lightbox img{max-width:100%; max-height:90vh; border-radius:4px; object-fit:contain;}
   .lightbox-close{position:absolute; top:24px; left:24px; color:var(--bone); font-size:2rem; cursor:pointer; background:none; border:none;}
   .info-row .eyebrow{margin-bottom:6px;}
   .info-row div{color:var(--titanium); font-size:0.95rem;}
@@ -445,7 +446,7 @@
       <div class="scan-wrap">
         <div class="scan-ring"></div>
         <div class="scan-ring r2"></div>
-        <img src="doctor.jpeg" alt="د. ريمون لطفي" class="doctor-photo" fetchpriority="high" decoding="async">
+        <img src="doctor.jpeg" alt="د. ريمون لطفي" class="doctor-photo" width="1213" height="821" fetchpriority="high" decoding="async">
         <div class="scan-line"></div>
       </div>
     </div>
@@ -600,7 +601,7 @@
       <form onsubmit="return submitMessage(event)">
         <div class="field-row">
           <div class="field"><label for="msg-name">الاسم</label><input id="msg-name" required></div>
-          <div class="field"><label for="msg-phone">رقم الهاتف (اختياري)</label><input id="msg-phone" type="tel"></div>
+          <div class="field"><label for="msg-phone">رقم الهاتف (اختياري)</label><input id="msg-phone" type="tel" inputmode="tel" autocomplete="tel"></div>
         </div>
         <div class="field"><label for="msg-body">رسالتك</label><textarea id="msg-body" rows="5" required></textarea></div>
         <button class="btn-primary" type="submit">إرسال الرسالة</button>
@@ -627,7 +628,7 @@
       <form onsubmit="return submitBooking(event)">
         <div class="field-row">
           <div class="field"><label for="name">الاسم بالكامل</label><input id="name" required></div>
-          <div class="field"><label for="phone">رقم الهاتف</label><input id="phone" type="tel" required></div>
+          <div class="field"><label for="phone">رقم الهاتف</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" required></div>
         </div>
         <div class="field-row">
           <div class="field"><label for="service">نوع الحالة</label>
@@ -652,8 +653,8 @@
 </main>
 
 <div class="lightbox" id="lightbox">
-  <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
-  <img id="lightbox-img" src="" alt="">
+  <button class="lightbox-close" onclick="closeLightbox()" aria-label="إغلاق الصورة">&times;</button>
+  <img id="lightbox-img" src="" alt="صورة مكبّرة" width="1200" height="900">
 </div>
 
 <div class="article-reader" id="article-reader">
@@ -1025,7 +1026,7 @@
         card.dataset.id = (catSlug === 'op' ? 'o' : 'a') + row.__row;
         card.dataset.images = JSON.stringify(images);
         card.innerHTML = `
-          ${images.length ? `<img loading="lazy" decoding="async" src="${toDirectImageUrl(images[0])}">` : ''}
+          ${images.length ? `<img loading="lazy" decoding="async" width="800" height="600" src="${toDirectImageUrl(images[0])}">` : ''}
           <span class="eyebrow">مقال — ${catKey}</span>
           <h3>${row.title || ''}</h3>
           <p>${row.article || ''}</p>
@@ -1065,7 +1066,7 @@
         images.forEach(img=>{
           const item = document.createElement('div');
           item.className = 'gallery-item';
-          item.innerHTML = `<img loading="lazy" decoding="async" src="${toDirectImageUrl(img)}" alt="${row.caption || 'صورة'}">`;
+          item.innerHTML = `<img loading="lazy" decoding="async" width="800" height="600" src="${toDirectImageUrl(img)}" alt="${row.caption || 'صورة'}">`;
           grid.appendChild(item);
         });
       });
@@ -1177,7 +1178,7 @@
         card.dataset.id = 'o' + row.__row;
         card.dataset.images = JSON.stringify(images);
         card.innerHTML = `
-          ${images.length ? `<img loading="lazy" decoding="async" src="${toDirectImageUrl(images[0])}">` : ''}
+          ${images.length ? `<img loading="lazy" decoding="async" width="800" height="600" src="${toDirectImageUrl(images[0])}">` : ''}
           <h3>${row.title || ''}</h3>
           <p>${row.story || ''}</p>
         `;
@@ -1211,13 +1212,17 @@
       if(!grid) return;
       rows.forEach(row=>{
         const images = Array.isArray(row.image) ? row.image : (row.image ? [row.image] : []);
-        const thumb = images.length ? toDirectImageUrl(images[0]) : '';
+        let thumb = images.length ? toDirectImageUrl(images[0]) : '';
+        if(!thumb && row.link){
+          const yt = String(row.link).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/);
+          if(yt) thumb = `https://img.youtube.com/vi/${yt[1]}/hqdefault.jpg`;
+        }
         const card = document.createElement('div');
         card.className = 'video-card';
         card.innerHTML = `
           <div class="video-embed">
             <a class="video-thumb-link" href="${row.link || '#'}" target="_blank" rel="noopener">
-              <img loading="lazy" decoding="async" src="${thumb}" alt="${row.title || 'فيديو'}">
+              ${thumb ? `<img loading="lazy" decoding="async" width="800" height="600" src="${thumb}" alt="${escHtml(row.title || 'فيديو')}" onerror="this.style.display='none'">` : ''}
               <span class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
             </a>
           </div>
@@ -1377,7 +1382,7 @@
 
     const readerImgWrap = document.getElementById('reader-img-wrap');
     readerImgWrap.className = images.length > 1 ? 'album-grid' : '';
-    readerImgWrap.innerHTML = images.map(src => `<img loading="lazy" decoding="async" src="${toDirectImageUrl(src)}">`).join('');
+    readerImgWrap.innerHTML = images.map(src => `<img loading="lazy" decoding="async" width="800" height="600" src="${toDirectImageUrl(src)}">`).join('');
     readerImgWrap.style.display = images.length ? (images.length > 1 ? 'grid' : 'flex') : 'none';
 
     document.getElementById('reader-title').textContent = title;
@@ -1439,8 +1444,8 @@
     ],
     videos: [
       {key:'title', label:'العنوان', type:'text'},
-      {key:'link', label:'رابط الفيديو', type:'text'},
-      {key:'image', label:'صورة الفيديو', type:'file', multiple:false}
+      {key:'link', label:'رابط الفيديو (فيسبوك أو انستجرام أو يوتيوب)', type:'text'},
+      {key:'image', label:'صورة الفيديو (اختياري — لو سبتها فاضية بتتجاب تلقائي من الرابط)', type:'file', multiple:false}
     ],
     reviews: [
       {key:'comment', label:'نص رأي المريض', type:'textarea'},
@@ -1529,8 +1534,10 @@
         inputHtml = `<input id="admin-f-${f.key}" type="file" accept="image/*" ${f.multiple ? 'multiple' : ''}>
           <div id="admin-existing-images"></div>`;
       } else if(adminType === 'articles' && f.key === 'section'){
-        inputHtml = `<input id="admin-f-${f.key}" type="text" value="${prefillVal}" list="admin-sections-datalist">
-          <datalist id="admin-sections-datalist"></datalist>`;
+        inputHtml = `<select id="admin-f-${f.key}" data-prefill="${escHtml(prefillVal)}" onchange="onSectionSelectChange(this)">
+            <option value="" disabled selected>جاري تحميل الأقسام...</option>
+          </select>
+          <input id="admin-f-section-new" type="text" placeholder="اكتب اسم القسم الجديد" style="display:none; margin-top:8px;">`;
       } else {
         inputHtml = `<input id="admin-f-${f.key}" type="${f.type}" value="${prefillVal}">`;
       }
@@ -1544,15 +1551,28 @@
     document.getElementById('admin-error-msg').style.display = 'none';
   }
 
+  // قائمة منسدلة بالأقسام الموجودة + اختيار "قسم جديد" بيظهر خانة تكتب فيها الاسم
+  function onSectionSelectChange(sel){
+    const inp = document.getElementById('admin-f-section-new');
+    if(!inp) return;
+    inp.style.display = (sel.value === '__new__') ? 'block' : 'none';
+    if(sel.value === '__new__') inp.focus();
+  }
   async function populateSectionsDatalist(){
-    const dl = document.getElementById('admin-sections-datalist');
-    if(!dl) return;
+    const sel = document.getElementById('admin-f-section');
+    if(!sel) return;
+    let sections = [];
     try{
       const res = await fetch(`${CLINIC_SHEET_URL}?type=articles`);
       const rows = await res.json();
-      const sections = [...new Set(rows.map(r => (r.section || '').trim()).filter(Boolean))];
-      dl.innerHTML = sections.map(s => `<option value="${s}">`).join('');
-    }catch(err){ /* لو فشل، تقدر برضو تكتب القسم يدويًا عادي */ }
+      sections = [...new Set(rows.map(r => (r.section || '').trim()).filter(Boolean))];
+    }catch(err){ /* لو فشل التحميل، تقدر تختار "قسم جديد" وتكتب الاسم */ }
+    const prefill = (sel.dataset.prefill || '').trim();
+    if(prefill && !sections.includes(prefill)) sections.push(prefill);
+    sel.innerHTML = '<option value="" disabled>اختر القسم</option>'
+      + sections.map(x => `<option value="${escHtml(x)}">${escHtml(x)}</option>`).join('')
+      + '<option value="__new__">➕ قسم جديد…</option>';
+    sel.value = prefill || '';
   }
 
   function renderExistingImages(){
@@ -1560,8 +1580,8 @@
     if(!box) return;
     box.innerHTML = keptImages.map((url, idx) => `
       <span class="existing-image-thumb">
-        <img loading="lazy" decoding="async" src="${toDirectImageUrl(url)}">
-        <button type="button" class="remove-img-btn" onclick="removeKeptImage(${idx})">×</button>
+        <img loading="lazy" decoding="async" width="800" height="600" src="${toDirectImageUrl(url)}">
+        <button type="button" class="remove-img-btn" onclick="removeKeptImage(${idx})" aria-label="حذف الصورة">×</button>
       </span>
     `).join('');
   }
@@ -1634,7 +1654,17 @@
         if(f.type === 'file'){
           fileField = el;
         } else {
-          payload[f.key] = el.value;
+          if(adminType === 'articles' && f.key === 'section'){
+            const chosen = el.value === '__new__' ? (document.getElementById('admin-f-section-new').value || '').trim() : el.value;
+            if(!chosen){
+              errorMsg.textContent = 'اختار القسم من القائمة، أو اكتب اسم القسم الجديد';
+              errorMsg.style.display = 'block';
+              return;
+            }
+            payload[f.key] = chosen;
+          } else {
+            payload[f.key] = el.value;
+          }
         }
       }
 
@@ -1756,8 +1786,8 @@
       // إعادة الترتيب بتبدّل الصف مع اللي جنبه فعليًا في الشيت، فبنعطلها وقت الفلترة
       // عشان متحصلش مفاجأة إن مقال من قسم تاني يتحرك مكانه
       const moveButtons = isFiltered ? '' : `
-        <button type="button" onclick="moveAdminItem(${item.__row}, 'up')" ${idx === 0 ? 'disabled' : ''} title="تحريك لأعلى">↑</button>
-        <button type="button" onclick="moveAdminItem(${item.__row}, 'down')" ${idx === visibleRows.length - 1 ? 'disabled' : ''} title="تحريك لأسفل">↓</button>
+        <button type="button" onclick="moveAdminItem(${item.__row}, 'up')" ${idx === 0 ? 'disabled' : ''} title="تحريك لأعلى" aria-label="تحريك لأعلى">↑</button>
+        <button type="button" onclick="moveAdminItem(${item.__row}, 'down')" ${idx === visibleRows.length - 1 ? 'disabled' : ''} title="تحريك لأسفل" aria-label="تحريك لأسفل">↓</button>
       `;
 
       const row = document.createElement('div');
@@ -1862,7 +1892,7 @@
       box.innerHTML = sections.map(s => `
         <span class="admin-section-tag">
           ${s}
-          <button type="button" onclick="deleteSection('${s.replace(/'/g,"\\'")}')" title="حذف القسم بالكامل">×</button>
+          <button type="button" onclick="deleteSection('${s.replace(/'/g,"\\'")}')" title="حذف القسم بالكامل" aria-label="حذف القسم بالكامل">×</button>
         </span>
       `).join('');
     }catch(err){
