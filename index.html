@@ -77,6 +77,27 @@
   .faq-item summary::before{content:'+'; color:var(--scan); margin-left:10px; font-weight:900;}
   .faq-item[open] summary::before{content:'−';}
   .faq-item p{padding:0 0 18px; color:var(--titanium); white-space:pre-line;}
+
+  /* ---- نافذة شات واتساب الصغيرة ---- */
+  .wa-float{border:none; cursor:pointer;}
+  .chat-pop{position:fixed; bottom:90px; left:20px; z-index:950; width:min(320px, calc(100vw - 40px)); border-radius:14px; overflow:hidden; box-shadow:0 10px 36px rgba(0,0,0,.45); background:#ECE5DD; color:#111; font-family:'IBM Plex Sans Arabic', sans-serif; transform:translateY(16px) scale(.96); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;}
+  .chat-pop.open{transform:none; opacity:1; pointer-events:auto;}
+  .chat-head{background:#075E54; color:#fff; padding:12px 14px; display:flex; align-items:center; gap:10px;}
+  .chat-head img{width:42px; height:42px; border-radius:50%; object-fit:cover; object-position:top; border:2px solid rgba(255,255,255,.35);}
+  .chat-head b{display:block; font-size:.95rem; line-height:1.3;}
+  .chat-head small{font-size:.74rem; opacity:.85;}
+  .chat-close{margin-right:auto; background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer; line-height:1; padding:0 4px;}
+  .chat-body{padding:14px 12px 8px; min-height:120px; background:#ECE5DD;}
+  .chat-bubble{background:#fff; border-radius:0 10px 10px 10px; padding:9px 12px; font-size:.92rem; line-height:1.6; box-shadow:0 1px 1px rgba(0,0,0,.12); max-width:92%;}
+  .chat-quick{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  .chat-quick button{background:#fff; border:1px solid #25D366; color:#075E54; border-radius:18px; padding:6px 12px; font-size:.82rem; cursor:pointer; font-family:inherit;}
+  .chat-quick button:hover{background:#E7F9EE;}
+  .chat-input{display:flex; flex-direction:row; flex-wrap:nowrap; gap:8px; padding:8px 10px 10px; background:#F0F0F0; align-items:flex-end;}
+  .chat-input textarea{flex:1 1 0; width:0; min-width:0; border:none; border-radius:18px; padding:9px 13px; font-family:inherit; font-size:.9rem; resize:none; max-height:90px; background:#fff; color:#111; outline:none;}
+  .chat-input button{width:40px; height:40px; border-radius:50%; border:none; background:#25D366; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .chat-input button svg{width:20px; height:20px; fill:#fff; transform:scaleX(-1);}
+  .chat-sent{display:none; background:#DCF8C6; border-radius:10px 0 10px 10px; padding:9px 12px; font-size:.9rem; margin:10px 0 0 auto; max-width:92%; word-break:break-word;}
+  .chat-thanks{display:none; font-size:.8rem; color:#555; margin-top:8px;}
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
   body{
@@ -739,9 +760,27 @@
     </div>
   </section>
 
-<a class="wa-float" id="wa-float" href="https://wa.me/201277377245?text=%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%AD%D8%AC%D8%B2%20%D9%83%D8%B4%D9%81%20%D8%B9%D9%86%D8%AF%20%D8%AF.%20%D8%B1%D9%8A%D9%85%D9%88%D9%86%20%D9%84%D8%B7%D9%81%D9%8A" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب">
+<button class="wa-float" id="wa-float" onclick="toggleChat()" aria-label="راسل الدكتور على واتساب">
   <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.8 14.05c-.25.7-1.45 1.34-2 1.4-.5.07-1.13.1-1.82-.12-.42-.13-.96-.31-1.65-.6-2.9-1.25-4.8-4.17-4.94-4.37-.15-.2-1.18-1.57-1.18-3s.75-2.12 1.02-2.41c.27-.3.58-.37.78-.37h.56c.18 0 .42-.07.65.5.25.6.84 2.06.91 2.2.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.3.77 1.27 1.65 2.05 1.13 1 2.09 1.32 2.39 1.47.3.15.47.12.65-.07.17-.2.75-.87.95-1.17.2-.3.4-.25.67-.15.27.1 1.72.82 2.02.97.3.15.5.22.57.35.07.12.07.72-.18 1.42z"/></svg>
-</a>
+</button>
+
+<div class="chat-pop" id="chat-pop" role="dialog" aria-label="مراسلة الدكتور">
+  <div class="chat-head">
+    <img src="doctor.jpeg" alt="د. ريمون لطفي" width="42" height="42">
+    <div><b data-ar="د. ريمون لطفي" data-en="Dr. Remon Lotfy">د. ريمون لطفي</b><small data-ar="استشاري جراحة العظام والمفاصل" data-en="Orthopedic & Joint Surgery Consultant">استشاري جراحة العظام والمفاصل</small></div>
+    <button class="chat-close" onclick="closeChat()" aria-label="إغلاق">&times;</button>
+  </div>
+  <div class="chat-body">
+    <div class="chat-bubble" data-ar="أهلاً بحضرتك 👋 اكتب رسالتك أو استفسارك وهتوصل للدكتور مباشرة على واتساب." data-en="Hello 👋 Write your message or question and it will reach the doctor directly on WhatsApp.">أهلاً بحضرتك 👋 اكتب رسالتك أو استفسارك وهتوصل للدكتور مباشرة على واتساب.</div>
+    <div class="chat-quick"><button type="button" onclick="chatBook()" data-ar="📅 احجز ميعاد" data-en="📅 Book an appointment">📅 احجز ميعاد</button></div>
+    <div class="chat-sent" id="chat-sent"></div>
+    <div class="chat-thanks" id="chat-thanks">تم فتح واتساب — اضغط إرسال هناك لتصل الرسالة للدكتور ✔</div>
+  </div>
+  <form class="chat-input" onsubmit="return sendChat(event)">
+    <textarea id="chat-text" rows="1" placeholder="اكتب رسالتك..." aria-label="رسالتك للدكتور"></textarea>
+    <button type="submit" aria-label="إرسال"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
+  </form>
+</div>
 
 <footer>
   <div data-ar="© 2026 عيادة د. ريمون لطفي لجراحة العظام والمفاصل" data-en="© 2026 Dr. Remon Lotfy Orthopedic Clinic">© 2026 عيادة د. ريمون لطفي لجراحة العظام والمفاصل</div>
@@ -762,6 +801,43 @@
 </footer>
 
 <script>
+  /* ---- نافذة الشات الصغيرة (شكل واتساب) ---- */
+  function openChat(){ document.getElementById('chat-pop').classList.add('open'); }
+  function closeChat(){
+    document.getElementById('chat-pop').classList.remove('open');
+    try{ sessionStorage.setItem('chatClosed','1'); }catch(e){}
+  }
+  function toggleChat(){
+    const pop = document.getElementById('chat-pop');
+    if(pop.classList.contains('open')) closeChat(); else openChat();
+  }
+  function chatBook(){ closeChat(); showPage('booking'); }
+  function sendChat(e){
+    e.preventDefault();
+    const ta = document.getElementById('chat-text');
+    const msg = ta.value.trim();
+    if(!msg){ ta.focus(); return false; }
+    // تسجيل الرسالة في الشيت (حتى لو المريض ما ضغطش إرسال في واتساب)
+    fetch(`${CLINIC_SHEET_URL}?type=booking`, {
+      method: 'POST',
+      body: JSON.stringify({name: '', phone: '', service: 'رسالة من نافذة الشات', date: '', msg})
+    }).catch(()=>{});
+    const text = `رسالة من موقع العيادة:\n${msg}`;
+    window.open(`https://wa.me/201277377245?text=${encodeURIComponent(text)}`, '_blank');
+    const sent = document.getElementById('chat-sent');
+    sent.textContent = msg; sent.style.display = 'block';
+    document.getElementById('chat-thanks').style.display = 'block';
+    ta.value = '';
+    return false;
+  }
+  // تظهر تلقائياً بعد ثانيتين من فتح الموقع (مرة واحدة في الجلسة، وبدون لوحة التحكم)
+  window.addEventListener('load', ()=>{
+    let closed = false;
+    try{ closed = sessionStorage.getItem('chatClosed') === '1'; }catch(e){}
+    if(closed || location.hash === '#admin' || /^#article-/.test(location.hash)) return;
+    setTimeout(()=>{ if(location.hash !== '#admin') openChat(); }, 2000);
+  });
+
   /* ---- الوضع الفاتح/الداكن ---- */
   function applyTheme(t){
     document.documentElement.setAttribute('data-theme', t);
@@ -857,7 +933,7 @@
     const msg = document.getElementById('msg-body').value;
 
     // Log to the same Google Sheet as bookings, tagged as a general message
-    fetch(SHEET_URL, {
+    fetch(`${CLINIC_SHEET_URL}?type=booking`, {
       method: 'POST',
       body: JSON.stringify({name, phone, service: 'رسالة عامة (راسل الدكتور)', date: '', msg})
     }).catch(err => console.error('Sheet log failed:', err));
